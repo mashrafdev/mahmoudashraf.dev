@@ -75,6 +75,10 @@ services:
       caddy: mahmoudashraf.dev
       caddy.reverse_proxy: '{{upstreams 8000}}'
 
+      # www Redirect
+      caddy_1: www.mahmoudashraf.dev
+      caddy_1.redir: https://mahmoudashraf.dev{uri} 301
+
       # Redirects
       caddy.redir_0: '/yt https://www.youtube.com/@mashrafdev 301'
       caddy.redir_1: '/youtube https://www.youtube.com/@mashrafdev 301'
