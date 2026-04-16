@@ -12,7 +12,7 @@
     "@hotwired/stimulus": "^3.2.2",
     "@shikijs/transformers": "^4.0.2",
     "alpinejs": "npm:@alpinejs/csp@^3.15.8",
-    "dompurify": "^3.3.3",
+    "dompurify": "^3.4.0",
     "htmx.org": "^2.0.8",
     "marked": "^17.0.4",
     "shiki": "^4.0.2"
