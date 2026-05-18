@@ -1,6 +1,6 @@
 [tools]
 node = "24.14.0"
-uv = "0.10.0"
+uv = "0.11.14"
 
 [tasks.dev]
 alias = "d"

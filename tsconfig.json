@@ -10,15 +10,14 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "noEmit": true,
+    "noUncheckedSideEffectImports": false,
 
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/resources/*"]
+      "@/*": ["./src/resources/*"]
     }
   },
   "include": ["src/**/*.ts", "bin/**/*.ts", "global.d.ts", "vite.config.ts"],

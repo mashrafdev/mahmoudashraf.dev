@@ -1,11 +1,6 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 
-ox-base: &ox-base
-  language: system
-  types: [text]
-  files: "\\.(jsx?|tsx?|c(js|ts)|m(js|ts)|d\\.(ts|cts|mts)|jsonc?|css|svelte|vue|astro|graphql|gql|md|markdown|yaml|yml|toml)$"
-
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -19,12 +14,12 @@ repos:
       - id: check-added-large-files
 
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.10.0
+    rev: 0.11.14
     hooks:
       - id: uv-lock
 
   - repo: https://github.com/RobertCraigie/pyright-python
-    rev: v1.1.407
+    rev: v1.1.409
     hooks:
       - id: pyright
 
@@ -35,26 +30,20 @@ repos:
       - id: djlint-django
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.1
+    rev: v0.15.13
     hooks:
       - id: ruff-check
         args: [--fix]
       - id: ruff-format
 
-  - repo: local
+  - repo: https://github.com/oxc-project/mirrors-oxlint
+    rev: v1.65.0
     hooks:
-      - id: local-oxfmt
-        name: oxfmt format
-        entry: pnpm exec oxfmt --write
-        <<: *ox-base
+      - id: oxlint
+        verbose: true
 
-      - id: local-oxlint
-        name: oxlint check
-        entry: pnpm exec oxlint --fix
-        <<: *ox-base
-
-      - id: local-tsc
-        name: typescript type check
-        entry: pnpm exec tsc --noEmit --pretty
-        language: system
-        pass_filenames: false
+  - repo: https://github.com/oxc-project/mirrors-oxfmt
+    rev: v0.50.0
+    hooks:
+      - id: oxfmt
+        verbose: true
