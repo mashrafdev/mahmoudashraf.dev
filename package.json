@@ -10,20 +10,20 @@
   "dependencies": {
     "@alpinejs/collapse": "^3.15.12",
     "@hotwired/stimulus": "^3.2.2",
-    "@shikijs/transformers": "^4.0.2",
+    "@shikijs/transformers": "^4.1.0",
     "alpinejs": "npm:@alpinejs/csp@^3.15.12",
     "dompurify": "^3.4.5",
     "htmx.org": "^2.0.10",
-    "marked": "^18.0.3",
-    "shiki": "^4.0.2"
+    "marked": "^18.0.4",
+    "shiki": "^4.1.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.0",
     "@types/alpinejs": "^3.13.11",
     "@types/alpinejs__collapse": "^3.13.4",
     "@types/node": "^25.9.0",
-    "oxfmt": "^0.50.0",
-    "oxlint": "^1.65.0",
+    "oxfmt": "^0.51.0",
+    "oxlint": "^1.66.0",
     "tailwindcss": "4.3.0",
     "terser": "^5.47.1",
     "typescript": "^6.0.3",
