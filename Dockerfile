@@ -1,7 +1,7 @@
 FROM node:24.14.0-slim AS frontend-base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
+RUN corepack enable && corepack prepare pnpm@11.7.0 --activate
 WORKDIR /app
 
 FROM frontend-base AS frontend-prod-deps

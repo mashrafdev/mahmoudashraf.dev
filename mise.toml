@@ -2,9 +2,17 @@
 node = "24.14.0"
 uv = "0.11.14"
 
+[hooks]
+postinstall = 'npx corepack enable'
+
+[env]
+_.file = '.env'
+_.path = ['{{config_root}}/node_modules/.bin']
+
 [tasks.dev]
 alias = "d"
 description = "Start full development stack"
+depends = ['pnpm-install']
 # run = [{ tasks = ["django", "vite", "celery-worker", "celery-beat"] }]
 run = [{ tasks = ["django", "vite"] }]
 
@@ -15,6 +23,12 @@ run = "uv run python manage.py runserver ${PORT:-8000}"
 [tasks.vite]
 description = "Run Vite frontend dev server"
 run = "pnpm exec vite"
+
+[tasks.pnpm-install]
+description = 'Installs dependencies with pnpm'
+run = 'pnpm install'
+sources = ['package.json', 'pnpm-lock.yaml', 'mise.toml']
+outputs = ['node_modules/.pnpm/lock.yaml']
 
 [tasks.celery-worker]
 description = "Run Celery worker"
