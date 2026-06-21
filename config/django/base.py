@@ -177,10 +177,13 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 10_000
 
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "BACKEND": "config.settings.django_storage.MediaR2Storage",
     },
     "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage",
+        "BACKEND": "src.base.storage.ManifestStaticFilesStorage",
+    },
+    "wagtailrenditions": {
+        "BACKEND": "config.settings.django_storage.WagtailRenditionStorage",
     },
 }
 
