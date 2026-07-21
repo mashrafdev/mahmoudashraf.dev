@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+
+### Sync local environment with production VPS.
+###
+### 1. Takes a fresh database backup on the VPS.
+### 2. Downloads the backup to the local ./backups directory.
+### 3. Syncs media from R2 to local MinIO.
+### 4. Restores the downloaded backup locally (drops existing db).
+###
+### Usage:
+###     $ ./bin/sync-prod
+###     $ ./bin/sync-prod --no-confirm
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+
+PROD_SSH="${PROD_SSH:-ashrafvps}"
+PROD_DIR="${PROD_DIR:-projects/enabled/mahmoudashraf.dev}"
+
+# ── Helpers ───────────────────────────────────────────────────────
+msg_info() { echo -e "$(date +'%Y-%m-%d %H:%M:%S') \e[1m[INFO]\e[0m $*"; }
+msg_success() { echo -e "$(date +'%Y-%m-%d %H:%M:%S') \e[32m[OK]\e[0m $*"; }
+msg_error() { echo -e "$(date +'%Y-%m-%d %H:%M:%S') \e[31m[ERROR]\e[0m $*" >&2; }
+
+# Parse arguments
+RESTORE_ARGS=()
+if [[ "${1:-}" == "--no-confirm" || "${1:-}" == "-y" ]]; then
+  RESTORE_ARGS+=("--no-confirm")
+fi
+
+# 1. Take a fresh backup on the VPS
+msg_info "Triggering fresh database backup on production VPS (${PROD_SSH})..."
+if ! ssh "$PROD_SSH" "cd $PROD_DIR && direnv exec . ./bin/db-backup"; then
+  msg_error "Failed to create backup on the VPS."
+  exit 1
+fi
+
+# 2. Find and download the latest backup
+msg_info "Locating the latest backup on the VPS..."
+LATEST_BACKUP=$(ssh "$PROD_SSH" "ls -t $PROD_DIR/backups/backup_*.sql.gz 2>/dev/null | head -n1")
+
+if [[ -z "$LATEST_BACKUP" ]]; then
+  msg_error "Could not find any backup files on the VPS."
+  exit 1
+fi
+
+msg_info "Downloading backup: $(basename "$LATEST_BACKUP")..."
+mkdir -p "${PROJECT_DIR}/backups"
+LOCAL_BACKUP="${PROJECT_DIR}/backups/$(basename "$LATEST_BACKUP")"
+
+if ! scp "${PROD_SSH}:${LATEST_BACKUP}" "$LOCAL_BACKUP"; then
+  msg_error "Failed to download the backup file."
+  exit 1
+fi
+msg_success "Downloaded to ${LOCAL_BACKUP}"
+
+# 3. Sync media
+msg_info "Syncing media from production..."
+if ! "${SCRIPT_DIR}/media-sync"; then
+  msg_error "Media sync failed."
+  exit 1
+fi
+
+# 4. Restore the local database
+msg_info "Restoring local database using the downloaded backup..."
+if ! "${SCRIPT_DIR}/db-restore" "${RESTORE_ARGS[@]:-}" "$LOCAL_BACKUP"; then
+  msg_error "Database restore failed."
+  exit 1
+fi
+
+msg_success "Local environment successfully synced with production!"

@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# This script syncs your production R2 media bucket to your local MinIO instance.
+# It requires rclone to be configured with two remotes:
+# 1. `r2`: pointing to your Cloudflare R2 production bucket.
+# 2. `minio`: pointing to your local MinIO instance.
+
+echo "Syncing production media from R2 to local MinIO..."
+
+# Ensure rclone is installed
+if ! command -v rclone &>/dev/null; then
+  echo "[ERROR] rclone could not be found. Please install it."
+  exit 1
+fi
+
+# IMPORTANT: Configure your remotes first with `rclone config`
+# R2 Remote should be named 'r2'
+# MinIO Remote should be named 'minio'
+# Usage: rclone sync source:bucket/path dest:bucket/path
+
+PROD_BUCKET="${R2_BUCKET:-mahmoudashraf-dev}"
+LOCAL_BUCKET="${MINIO_BUCKET:-mahmoudashraf-dev}"
+
+# Configure the local MinIO remote on the fly using environment variables
+export RCLONE_CONFIG_MINIO_TYPE="s3"
+export RCLONE_CONFIG_MINIO_PROVIDER="Minio"
+export RCLONE_CONFIG_MINIO_ENDPOINT="${MINIO_ENDPOINT:-http://localhost:9000}"
+export RCLONE_CONFIG_MINIO_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-minioadmin}"
+export RCLONE_CONFIG_MINIO_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-minioadmin}"
+
+echo "Running rclone sync from r2:${PROD_BUCKET} to minio:${LOCAL_BUCKET}..."
+rclone sync "r2:${PROD_BUCKET}" "minio:${LOCAL_BUCKET}" --progress
+
+echo "Done!"

@@ -46,9 +46,8 @@ usage() {
 list_backups() {
   local backups
   backups=$(find "$BACKUP_DIR" -maxdepth 1 \
-    -name "${BACKUP_PREFIX}_*.sql.gz" \
-    -printf '%T@ %p\n' 2>/dev/null |
-    sort -rn | cut -d' ' -f2-)
+    -name "${BACKUP_PREFIX}_*.sql.gz" 2>/dev/null |
+    sort -rn)
 
   if [[ -z "$backups" ]]; then
     msg_error "No backups found in ${BACKUP_DIR}"
@@ -65,8 +64,7 @@ list_backups() {
 }
 
 find_latest() {
-  find "$BACKUP_DIR" -maxdepth 1 -name "${BACKUP_PREFIX}_*.sql.gz" -printf '%T@ %p\n' 2>/dev/null |
-    sort -rn | head -1 | cut -d' ' -f2-
+  find "$BACKUP_DIR" -maxdepth 1 -name "${BACKUP_PREFIX}_*.sql.gz" 2>/dev/null | sort -rn | head -1
 }
 
 docker_compose() {
@@ -148,7 +146,7 @@ if [[ "$NO_CONFIRM" != true ]]; then
   msg_warn "Active services (django, celery) will be stopped during restore."
   echo ""
   read -rp "Are you sure you want to continue? [y/N] " confirm
-  if [[ "${confirm,,}" != "y" ]]; then
+  if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
     msg_info "Restore cancelled."
     exit 0
   fi

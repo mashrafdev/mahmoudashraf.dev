@@ -74,7 +74,7 @@ if [[ "$NO_CONFIRM" != true ]]; then
   msg_warn "All cached data and Celery tasks in Redis will be lost."
   echo ""
   read -rp "Are you sure you want to continue? [y/N] " confirm
-  if [[ "${confirm,,}" != "y" ]]; then
+  if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
     msg_info "Operation cancelled."
     exit 0
   fi
