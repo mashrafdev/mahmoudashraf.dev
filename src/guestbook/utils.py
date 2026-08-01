@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 
 import bleach
 import markdown
+import pymdownx.emoji
 import requests
 from bs4 import BeautifulSoup, Tag
 from PIL import Image
@@ -27,6 +28,8 @@ def allow_src(_, name, value):
 ALLOWED_ATTRS = {"a": ["href"], "img": allow_src, "code": ["class"]}
 ALLOWED_TAGS = frozenset(
     {
+        "a",
+        "del",
         "p",
         "br",
         "strong",
@@ -136,7 +139,16 @@ def highlight_code(pre: Tag):
 
 
 def render_guestbook_markdown(value):
-    md = markdown.Markdown(extensions=["fenced_code"])
+    md = markdown.Markdown(
+        extensions=[
+            "pymdownx.superfences",
+            "pymdownx.magiclink",
+            "pymdownx.saneheaders",
+            "pymdownx.tilde",
+            "pymdownx.emoji",
+        ],
+        extension_configs={"pymdownx.emoji": {"emoji_generator": pymdownx.emoji.to_alt}},
+    )
     html_output = md.convert(value)
 
     sanitized_html = bleach.clean(

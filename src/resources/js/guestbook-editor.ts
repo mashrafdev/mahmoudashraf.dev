@@ -11,6 +11,8 @@ type Preset = {
 };
 
 const allowedTags = [
+  'a',
+  'del',
   'p',
   'br',
   'strong',
