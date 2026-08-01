@@ -123,6 +123,11 @@ DATABASES = {
         "PASSWORD": env.str("DB_PASSWORD", "postgres"),
         "HOST": env.str("DB_HOST", "127.0.0.1"),
         "PORT": env.int("DB_PORT", 5432),
+        "CONN_MAX_AGE": 0,
+        "CONN_HEALTH_CHECKS": env.bool("CONN_HEALTH_CHECKS", True),
+        "OPTIONS": {
+            "pool": env.bool("DB_POOL", True),
+        },
     }
 }
 
