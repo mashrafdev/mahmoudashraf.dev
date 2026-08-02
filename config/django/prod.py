@@ -119,3 +119,5 @@ SECURE_CSP = {
     "base-uri": [CSP.SELF],
     "upgrade-insecure-requests": True,
 }
+
+from config.settings.sentry import *  # noqa: E402, F403
