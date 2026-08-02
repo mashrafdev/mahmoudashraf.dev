@@ -12,11 +12,6 @@ from wagtail.documents import urls as wagtaildocs_urls
 from src.base import views
 from src.search.views import SearchView
 
-
-def trigger_error(request):
-    division_by_zero = 1 / 0  # noqa: F841
-
-
 urlpatterns = debug_toolbar_urls() + [
     path(
         "ht/container/",
@@ -28,7 +23,6 @@ urlpatterns = debug_toolbar_urls() + [
         ),
         name="health_check-container",
     ),
-    path("sentry-debug/", trigger_error),
     path(settings.DJANGO_ADMIN_PATH, admin.site.urls),
     path("forms/contact/", include("src.contact.urls")),
     path("forms/guestbook/", include("src.guestbook.urls")),
