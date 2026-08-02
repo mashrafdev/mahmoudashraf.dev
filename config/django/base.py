@@ -38,6 +38,8 @@ DEBUG = env.bool("DEBUG", default=True)
 
 ALLOWED_HOSTS = ["*"]
 
+ADMINS = env.str("DJANGO_ADMINS", default="") and tuple(env.dict("DJANGO_ADMINS").items()) or ()
+
 # Application definition
 INSTALLED_APPS = (
     WAGTAIL_INSTALLED_APPS
