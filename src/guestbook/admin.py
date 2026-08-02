@@ -1,6 +1,8 @@
 from django.contrib import admin
 
 from .models import Guestbook
+from .tasks import optimize_guestbook_html
+from .utils import render_guestbook_markdown
 
 
 @admin.register(Guestbook)
@@ -41,3 +43,11 @@ class GuestbookAdmin(admin.ModelAdmin):
             },
         ),
     )
+
+    def save_model(self, request, obj, form, change):
+        if "message" in form.changed_data or not obj.message_html:
+            obj.message_html = render_guestbook_markdown(obj.message)
+            super().save_model(request, obj, form, change)
+            optimize_guestbook_html.enqueue(obj.id)
+        else:
+            super().save_model(request, obj, form, change)
