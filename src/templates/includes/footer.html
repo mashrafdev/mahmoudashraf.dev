@@ -1,4 +1,4 @@
-{% load button_tags menu_tags wagtailimages_tags link_tags base_tags %}
+{% load button_tags menu_tags wagtailimages_tags link_tags base_tags i18n %}
 <footer class="zigzag relative bg-dark text-secondary overflow-hidden"
         role="contentinfo"
         aria-label="Site footer">
@@ -7,8 +7,8 @@
   </div>
 
   <div class="relative z-10 container mx-auto px-4 sm:px-6 py-12 sm:py-16">
-    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-x-8 lg:gap-y-12">
-      <section class="h-card md:col-span-3 lg:col-span-3"
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1.5fr] gap-6 sm:gap-8 lg:gap-x-8 lg:gap-y-12">
+      <section class="h-card md:col-span-2 lg:col-span-1"
                aria-labelledby="author-heading">
         {% get_image_by_title "avatar" as avatar %}
         {% image avatar fill-150x150 as avatar_photo %}
@@ -28,11 +28,33 @@
         <h2 id="author-heading" class="sr-only">
           About the Author
         </h2>
-        <a class="u-url u-uid block text-lg sm:text-xl font-bold text-primary hover:text-accent transition-all duration-300 hover:translate-x-1 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:rounded"
-           rel="me"
-           href="https://mahmoudashraf.dev/"
-           aria-label="Visit Mahmoud Ashraf's website">
-          <span class="p-name">Mahmoud Ashraf</span>
+        <div class="flex items-center gap-4 flex-wrap">
+          <a class="u-url u-uid text-lg sm:text-xl font-bold text-primary hover:text-accent transition-all duration-300 hover:translate-x-1 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:rounded"
+             rel="me"
+             href="https://mahmoudashraf.dev/"
+             aria-label="Visit Mahmoud Ashraf's website">
+            <span class="p-name">Mahmoud Ashraf</span>
+          </a>
+          {% with available=settings.base.SiteSettings.avilable_for_projects %}
+            <span class="inline-flex items-center gap-1.5 text-xs font-medium text-stuble">
+              <span class="{% if available %}
+                             bg-green-600 border-green-100/40
+                           {% else %}
+                             bg-red-600 border-red-100/40
+                           {% endif %}
+                           border-2 motion-safe:animate-pulse w-2 h-2 rounded-full"></span>
+              {% if available %}
+                {% trans "Available for projects" %}
+              {% else %}
+                {% trans "Offline" %}
+              {% endif %}
+            </span>
+          {% endwith %}
+        </div>
+
+        <a href="mailto:hello@mahmoudashraf.dev"
+           class="u-email text-sm text-stuble hover:text-accent focus:text-accent transition-colors duration-200 focus:outline-none focus:underline decoration-accent/50 underline-offset-2 mt-1 inline-block">
+          hello@mahmoudashraf.dev
         </a>
 
         <p class="p-note text-sm sm:text-base mt-2 max-w-md leading-relaxed text-stuble">
@@ -43,76 +65,76 @@
           Crafting fast, accessible, and user-focused web experiences.
         </p>
 
-        <nav class="flex flex-wrap items-center gap-2 sm:gap-3 mt-6 clear-left"
-             aria-label="Social media links">
-          {% for social in settings.base.SiteSettings.social_links %}
-            {% link rel="me" href=social.url class="u-url text-secondary hover:text-accent focus:text-accent transition-all duration-300 hover:scale-110 focus:scale-110 p-2 sm:p-3 rounded-full hover:bg-neutral-800/50 focus:bg-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-accent/30" title=social.text aria-label=social.text %}
-              {% icon social.icon class="w-5 h-5 sm:w-6 sm:h-6" %}
-              <span class="sr-only">{{ social.text }}</span>
-            {% endlink %}
-          {% endfor %}
+        <nav class="mt-6 clear-left" aria-label="Social media links">
+          <ul class="flex flex-wrap items-center gap-2 sm:gap-3 m-0 p-0 list-none">
+            {% for social in settings.base.SiteSettings.social_links %}
+              <li>
+                {% link rel="me" href=social.url class="u-url block text-stuble hover:text-accent focus:text-accent transition-all duration-300 hover:scale-110 focus:scale-110 p-2 sm:p-3 rounded-full hover:bg-neutral-800/50 focus:bg-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-accent/30" title=social.text %}
+                  {% icon social.icon class="w-5 h-5 sm:w-6 sm:h-6" aria_hidden="true" %}
+                  <span class="sr-only">{{ social.text }}</span>
+                {% endlink %}
+              </li>
+            {% endfor %}
+          </ul>
         </nav>
+
       </section>
 
-      {% flat_menu 'main-footer' template="includes/footer_menu.html" class="lg:col-span-1" %}
-      {% flat_menu 'content-footer' template="includes/footer_menu.html" class="lg:col-span-1" %}
+      {% flat_menu 'main-footer' template="includes/footer_menu.html" %}
+      {% flat_menu 'content-footer' template="includes/footer_menu.html" %}
     </div>
 
-    <section class="my-12 py-8 sm:py-12 border-y border-neutral-800/60"
+    <section class="my-8 py-6 border-y border-neutral-800/60"
              aria-labelledby="webrings-heading">
       <div class="max-w-6xl mx-auto">
-        <header class="text-center mb-8 sm:mb-12">
-          <h3 id="webrings-heading"
-              class="font-heading font-bold text-xl sm:text-2xl text-primary mb-3 tracking-wide">
-            Explore the IndieWeb
-          </h3>
-          <p class="text-sm sm:text-base text-stuble max-w-2xl mx-auto leading-relaxed">
-            Discover amazing independent websites through these community webrings
-          </p>
-        </header>
+        <div class="flex flex-col items-center gap-6">
+          <header class="text-center shrink-0">
+            <h3 id="webrings-heading"
+                class="font-heading font-bold text-xl text-primary tracking-wide">
+              IndieWeb Rings
+            </h3>
+            <p class="text-base text-stuble mt-1">
+              Explore the independent web
+            </p>
+          </header>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-          {% for webring in webrings %}
-            <article class="group relative border border-neutral-800/60 bg-gradient-to-br from-darker/90 to-dark/50 p-4 sm:p-6 hover:border-accent/50 focus-within:border-accent/50 transition-all duration-500 hover:transform hover:-translate-y-1 focus-within:transform focus-within:-translate-y-1 backdrop-blur-sm overflow-hidden">
+          <div class="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+            {% for webring in webrings %}
+              <article class="group relative flex items-center gap-4 border border-neutral-800/60 bg-gradient-to-br from-darker/90 to-dark/50 px-4 py-3 sm:px-5 sm:py-3.5 hover:border-accent/50 focus-within:border-accent/50 transition-all duration-500 hover:transform hover:-translate-y-1 focus-within:transform focus-within:-translate-y-1 backdrop-blur-sm overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-neutral-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                     aria-hidden="true">
+                </div>
 
-              <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-neutral-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                   aria-hidden="true">
-              </div>
+                <div class="relative z-10 text-xl flex items-center justify-center shrink-0 group-hover:text-accent transition-colors duration-300"
+                     aria-hidden="true">
+                  {{ webring.icon }}
+                </div>
 
-              <div class="relative ht-full z-10 flex flex-col gap-3 sm:gap-4">
-                <header class="flex items-center gap-3">
-                  <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-darker border border-neutral-700 flex items-center justify-center text-lg sm:text-xl group-hover:border-accent/30 transition-colors duration-300"
-                       aria-hidden="true">
-                    {{ webring.icon }}
-                  </div>
-                  <h4 class="font-heading font-semibold text-base sm:text-lg text-primary group-hover:text-accent transition-colors duration-300 flex-1 min-w-0">
-                    <a href="{{ webring.link }}"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       class="flex gap-2 items-center hover:text-accent focus:text-accent focus:outline-none focus:underline decoration-accent/50 underline-offset-2 transition-colors duration-300 group-hover:text-accent"
-                       aria-label="Visit {{ webring.title }} webring">
-                      <span>{{ webring.title }}</span>
-                      {% icon 'arrow-square-out' class="w-4 h-4" %}
-                    </a>
-                  </h4>
-                </header>
+                <div class="relative z-10 flex items-center gap-4">
+                  <a href="{{ webring.previous_link }}"
+                     class="text-stuble hover:text-accent focus:text-accent transition-colors duration-200 text-base p-1"
+                     title="Previous in {{ webring.title }}"
+                     aria-label="Previous site">{% icon "chevron-left" class="w-4" %}</a>
 
-                <p class="flex-1 text-sm sm:text-base text-stuble group-hover:text-secondary transition-colors duration-300 leading-relaxed">
-                  {{ webring.description }}
-                </p>
+                  <a href="{{ webring.link }}"
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     class="flex gap-2 items-center text-base font-medium text-primary hover:text-accent focus:text-accent transition-colors duration-300 focus:outline-none px-2 py-1"
+                     aria-label="Visit {{ webring.title }} webring">
+                    {{ webring.title }}
+                    {% icon "arrow-square-out" class="w-3" %}
+                  </a>
 
-                <nav aria-label="{{ webring.title }} navigation"
-                     class="flex items-center justify-between pt-2 gap-3">
-                  {% button size="sm" variant="muted" as="a" href=webring.previous_link class="transition-all duration-300 hover:scale-105 focus:scale-105 hover:bg-neutral-700/50 focus:bg-neutral-700/50 flex-shrink-0" %}
-                    ← Previous
-                  {% endbutton %}
-                  {% button size="sm" variant="muted" as="a" href=webring.next_link class="transition-all duration-300 hover:scale-105 focus:scale-105 hover:bg-neutral-700/50 focus:bg-neutral-700/50 flex-shrink-0" %}
-                    Next →
-                  {% endbutton %}
-                </nav>
-              </div>
-            </article>
-          {% endfor %}
+                  <a href="{{ webring.next_link }}"
+                     class="text-stuble hover:text-accent focus:text-accent transition-colors duration-200 text-base p-1"
+                     title="Next in {{ webring.title }}"
+                     aria-label="Next site">
+                    {% icon "chevron-right" class="w-4" %}
+                  </a>
+                </div>
+              </article>
+            {% endfor %}
+          </div>
         </div>
       </div>
     </section>
@@ -129,6 +151,9 @@
           {% link href="/terms-of-service/" class="hover:text-primary focus:text-primary transition-colors duration-200 focus:outline-none focus:underline decoration-primary/50 underline-offset-2" %}
             Terms
           {% endlink %}
+
+          <span class="mx-2 text-neutral-600" aria-hidden="true">•</span>
+          <span>Built with Django 🦄 </span>
         </div>
       </div>
 
@@ -139,5 +164,6 @@
         {% endlink %}
       </div>
     </div>
+
   </div>
 </footer>

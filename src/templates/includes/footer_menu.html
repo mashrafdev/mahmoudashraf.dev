@@ -1,20 +1,35 @@
-{% load link_tags menu_tags %}
+{% load link_tags menu_tags base_tags %}
 
 <div>
   {% if show_menu_heading and menu_heading %}
-    <h4 class="font-bold text-accent mb-4">
+    <h4 class="font-bold text-accent mb-4 flex items-center gap-2">
       {{ menu_heading|safe }}
     </h4>
   {% endif %}
 
   {% if menu_items %}
-    <ul class="space-y-2 text-sm">
+    <ul class="{% if menu_items|length > 5 %}
+                 flex flex-wrap items-center gap-x-3 gap-y-2
+               {% else %}
+                 space-y-2
+               {% endif %}
+               text-sm">
       {% for item in menu_items %}
-        <li>
-          {% link href=item.href class="hover:underline" %}
-            {{ item.text }}
-          {% endlink %}
-
+        <li class="{% if menu_items|length > 5 %}
+                     flex items-center gap-x-3
+                   {% endif %}">
+          {% if menu_items|length > 5 %}
+            {% link href=item.href class="text-stuble hover:text-accent focus:text-accent transition-colors duration-200 inline-block" %}
+              {{ item.text }}
+            {% endlink %}
+            {% if not forloop.last %}
+              <span class="text-neutral-600" aria-hidden="true">•</span>
+            {% endif %}
+          {% else %}
+            {% link href=item.href class="text-stuble hover:text-accent focus:text-accent hover:translate-x-1 focus:translate-x-1 transition-all duration-200 inline-block" %}
+              {{ item.text }}
+            {% endlink %}
+          {% endif %}
         </li>
       {% endfor %}
     </ul>
