@@ -13,6 +13,7 @@ import '@/js/header-nav';
 import '@/js/messages';
 import '@/js/django-comments';
 import '@/js/password-field';
+import '@/js/unicorn-tamagotchi';
 
 if (window.__APP_DATA__?.isNewGuestbookPage) {
   await import('./guestbook-editor');
