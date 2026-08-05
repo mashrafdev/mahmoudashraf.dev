@@ -21,7 +21,7 @@ export default defineConfig({
     rolldownOptions: {
       output: {
         manualChunks(id) {
-          if (/node_modules\/(htmx\.org|alpinejs)\//.test(id)) {
+          if (/node_modules\/(htmx\.org|alpinejs|@alpinejs)\//.test(id)) {
             return 'vendor';
           }
         },

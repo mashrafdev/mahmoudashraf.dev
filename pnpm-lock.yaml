@@ -11,9 +11,6 @@ importers:
       '@alpinejs/collapse':
         specifier: ^3.15.12
         version: 3.15.12
-      '@hotwired/stimulus':
-        specifier: ^3.2.2
-        version: 3.2.2
       '@shikijs/transformers':
         specifier: ^4.2.0
         version: 4.2.0
@@ -236,9 +233,6 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
-
-  '@hotwired/stimulus@3.2.2':
-    resolution: {integrity: sha512-eGeIqNOQpXoPAIP7tC1+1Yc1yl1xnwYqg+3mzqxyrbE5pg5YFBZcA6YoTiByJB6DKAEsiWtl6tjTJS4IYtbB7A==}
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -1239,8 +1233,6 @@ snapshots:
 
   '@esbuild/win32-x64@0.27.3':
     optional: true
-
-  '@hotwired/stimulus@3.2.2': {}
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:

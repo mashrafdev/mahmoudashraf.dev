@@ -153,32 +153,7 @@
           {% endlink %}
 
           <span class="mx-2 text-neutral-600" aria-hidden="true">•</span>
-          <span x-data="unicornTamagotchi"
-                class="relative inline-flex items-center font-sans">
-            Built with Django
-
-            <span x-ref="particleContainer"
-                  class="absolute inset-0 pointer-events-none"
-                  aria-hidden="true"></span>
-
-            <button @click="tap"
-                    type="button"
-                    :class="buttonClasses"
-                    aria-label="Pet the tamagotchi">
-              <span x-text="emoji"></span>
-            </button>
-
-            <span x-show="showStatus"
-                  x-text="statusText"
-                  class="absolute -top-9 left-1/2 -translate-x-1/2 font-mono text-[11px] font-bold text-accent bg-darker px-2.5 py-0.5 rounded-md border border-accent/40 whitespace-nowrap pointer-events-none shadow-[0_4px_12px_rgba(0,0,0,0.5)] z-50 tracking-tight"
-                  x-transition:enter="transition ease-out duration-150"
-                  x-transition:enter-start="opacity-0 -translate-y-1 scale-90"
-                  x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                  x-transition:leave="transition ease-in duration-150"
-                  x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-                  x-transition:leave-end="opacity-0 -translate-y-2 scale-90">
-            </span>
-          </span>
+          <span>Built with Django 🦄 </span>
         </div>
       </div>
 
