@@ -3,7 +3,7 @@
 <form id="contact-form"
       method="post"
       action="{% url 'contact' %}"
-      class="w-full flex flex-col gap-4"
+      class="w-full flex flex-col gap-6 bg-gradient-to-br from-darker/90 to-dark/50 p-6 sm:p-8 border border-neutral-800/60 shadow-2xl backdrop-blur-sm relative overflow-hidden"
       hx-post="{% url 'contact' %}"
       hx-target="#contact-form"
       hx-swap="outerHTML">
@@ -14,17 +14,19 @@
     <input type="hidden" name="source_url_fragment" value="#contact-form">
   </noscript>
 
-  <div class="grid md:grid-cols-2 gap-4">
+  <div class="grid md:grid-cols-2 gap-5 relative z-10">
     {{ form }}
   </div>
 
-  {% button
-    size="md"
-    type="submit"
-    class="w-fit"
-    id="contact-submit-button"
-    %}
-    <span>Send Message</span>
-    {% icon 'circle-notch' id="spinner" class="htmx-indicator animate-spin ht-5 w-5" %}
-  {% endbutton %}
+  <div class="flex items-center justify-end mt-2 relative z-10">
+    {% button
+      size="md"
+      type="submit"
+      class="w-full sm:w-fit"
+      id="contact-submit-button"
+      %}
+      <span>Send Message</span>
+      {% icon 'circle-notch' id="spinner" class="htmx-indicator animate-spin ml-2 h-4 w-4 hidden" %}
+    {% endbutton %}
+  </div>
 </form>

@@ -7,8 +7,10 @@ from src.utils.cva import cva
 
 BUTTON_CVA = cva(
     base=(
-        "group relative inline-block cursor-pointer shadow-xs focus-visible:outline-2 "
-        "focus-visible:outline-offset-2 focus-visible:outline-accent-bright"
+        "group relative inline-flex items-center justify-center cursor-pointer shadow-xs "
+        "focus-visible:outline-2 focus-visible:outline-accent-bright "
+        "focus-visible:outline-offset-2 "
+        "transition-all duration-200"
     ),
     variants={
         "variant": {

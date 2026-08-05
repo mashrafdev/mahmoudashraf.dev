@@ -3,5 +3,5 @@
        {% if widget.value != None %}
          value="{{ widget.value|stringformat:'s' }}"
        {% endif %}
-       class="peer w-full bg-neutral-800 px-3 py-2 text-primary shadow-md border border-neutral-700 placeholder:text-secondary transition-colors focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/50 aria-invalid:border-red-500 aria-invalid:text-red-500 aria-invalid:placeholder:text-red-500/70 aria-invalid:focus:border-red-500 aria-invalid:focus:ring-red-500/50 {{ widget.attrs.class }}"
+       class="peer w-full bg-neutral-800 px-4 py-2.5 text-primary shadow-sm border border-neutral-500 placeholder:text-secondary transition-all duration-200 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/50 aria-invalid:border-red-500 aria-invalid:text-red-500 aria-invalid:placeholder:text-red-500/70 aria-invalid:focus:border-red-500 aria-invalid:focus:ring-red-500/50 {{ widget.attrs.class }}"
        {% include "django/forms/widgets/attrs.html" %}>
