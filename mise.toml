@@ -1,6 +1,6 @@
 [tools]
 node = "24.14.0"
-uv = "0.11.14"
+uv = "0.12.2"
 
 [hooks]
 postinstall = 'npx corepack enable'

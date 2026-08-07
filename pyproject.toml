@@ -3,7 +3,7 @@ name = "mahmoudashraf.dev"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = "==3.14.3"
+requires-python = "==3.14.6"
 dependencies = [
   "beautifulsoup4>=4.13.4,<5",
   "bleach>=6.3.0,<7",
