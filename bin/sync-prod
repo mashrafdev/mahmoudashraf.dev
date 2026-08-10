@@ -15,9 +15,15 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+EXPLICIT_PROD_SSH="${PROD_SSH:-}"
+EXPLICIT_PROD_DIR="${PROD_DIR:-}"
 
-PROD_SSH="${PROD_SSH:-ashrafvps}"
-PROD_DIR="${PROD_DIR:-projects/enabled/mahmoudashraf.dev}"
+set -a
+[[ -f "${PROJECT_DIR}/.env" ]] && source "${PROJECT_DIR}/.env"
+set +a
+
+PROD_SSH="${EXPLICIT_PROD_SSH:-${PROD_SSH:-ashrafvps}}"
+PROD_DIR="${EXPLICIT_PROD_DIR:-${PROD_DIR:-projects/enabled/mahmoudashraf.dev}}"
 
 # ── Helpers ───────────────────────────────────────────────────────
 msg_info() { echo -e "$(date +'%Y-%m-%d %H:%M:%S') \e[1m[INFO]\e[0m $*"; }
@@ -32,7 +38,7 @@ fi
 
 # 1. Take a fresh backup on the VPS
 msg_info "Triggering fresh database backup on production VPS (${PROD_SSH})..."
-if ! ssh "$PROD_SSH" "cd $PROD_DIR && direnv exec . ./bin/db-backup"; then
+if ! ssh "$PROD_SSH" "cd $PROD_DIR && ./bin/db-backup"; then
   msg_error "Failed to create backup on the VPS."
   exit 1
 fi

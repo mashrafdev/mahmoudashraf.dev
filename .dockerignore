@@ -5,6 +5,9 @@ __pycache__/
 media/
 static/
 staticfiles/
+backups/
+db.sqlite3
+db.sqlite3-journal
 config/django/local.py
 *.py[cod]
 *$py.class
@@ -21,6 +24,9 @@ compose.yaml
 docker-compose*
 .env
 .env.*
+*.pem
+*.key
+*.crt
 
 # Docs / IDE / misc
 *.md

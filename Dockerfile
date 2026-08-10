@@ -4,7 +4,7 @@ ARG UV_VERSION=0.12.2
 ARG PYTHON_VERSION=3.14.6
 
 # --- Frontend base ---
-FROM node:${NODE_VERSION}-slim AS frontend-base
+FROM node:${NODE_VERSION}-bookworm-slim AS frontend-base
 
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
@@ -104,20 +104,24 @@ RUN apt-get update \
 
 COPY --from=frontend-prod-deps /usr/local/bin/node /usr/local/bin/node
 COPY --from=frontend-prod-deps /usr/local/lib/node_modules /usr/local/lib/node_modules
-COPY --from=builder --chown=app:app /python /python
-COPY --from=builder --chown=app:app /app /app
-COPY --from=frontend-prod-deps --chown=app:app /app/node_modules /app/node_modules
+COPY --from=builder /python /python
+COPY --from=builder /app /app
+COPY --from=frontend-prod-deps /app/node_modules /app/node_modules
 
-RUN chmod +x /app/bin/django-entrypoint.sh
+ENV PATH="/app/.venv/bin:$PATH" \
+    DJANGO_SETTINGS_MODULE=config.django.prod \
+    PYTHONDONTWRITEBYTECODE=1
+
+RUN chmod +x /app/bin/django-entrypoint.sh \
+    && node --version \
+    && python --version \
+    && node bin/shiki.mjs 'print("ok")' python github-dark >/dev/null
 
 USER app
 
-ENV PATH="/app/.venv/bin:$PATH"
-ENV DJANGO_SETTINGS_MODULE=config.django.prod
-
 EXPOSE 8000
 
-ENTRYPOINT []
+ENTRYPOINT ["/app/bin/django-entrypoint.sh"]
 
 # --- Nginx (static files) ---
 FROM nginx:${NGINX_VERSION}-alpine AS nginx

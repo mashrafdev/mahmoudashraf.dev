@@ -2,7 +2,9 @@
 
 set -euo pipefail
 
-python manage.py migrate --noinput
+if [[ $# -gt 0 ]]; then
+  exec "$@"
+fi
 
 exec gunicorn config.wsgi \
   --workers "${WEB_CONCURRENCY:-3}" \
@@ -10,6 +12,7 @@ exec gunicorn config.wsgi \
   --worker-class gthread \
   --threads 4 \
   --timeout 60 \
+  --graceful-timeout 75 \
   --access-logfile - \
   --error-logfile - \
   --log-level info \

@@ -9,35 +9,46 @@ services:
     image: postgres:18.2-bookworm
     networks:
       - internal
-    env_file:
-      - .env
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:?DB_NAME is required}
+      POSTGRES_USER: ${DB_USER:?DB_USER is required}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
     volumes:
       - postgres_data:/var/lib/postgresql
     restart: unless-stopped
+    init: true
+    stop_grace_period: 60s
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 256
+    mem_limit: 1536m
+    cpus: 1.5
     logging: *default-logging
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER} -d ${DB_NAME}']
+      test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
       interval: 10s
       timeout: 5s
       retries: 5
 
   redis:
     image: valkey/valkey:9.0.2-alpine
-    env_file:
-      - .env
     networks:
       - internal
-    command: ['valkey-server', '--appendonly', 'yes', '--requirepass', '${REDIS_PASSWORD}']
+    command: ['sh', '-c', 'exec valkey-server --appendonly yes --requirepass "$${REDIS_PASSWORD}"']
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
     volumes:
       - redis_data:/data
     restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 512m
+    cpus: 0.5
     logging: *default-logging
     healthcheck:
-      test: ['CMD', 'valkey-cli', '-a', '${REDIS_PASSWORD}', 'ping']
+      test: ['CMD-SHELL', 'REDISCLI_AUTH="$${REDIS_PASSWORD}" valkey-cli ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -48,11 +59,26 @@ services:
       - caddy
     restart: unless-stopped
     init: true
+    read_only: true
     security_opt:
       - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+      - CHOWN
+      - SETGID
+      - SETUID
+    tmpfs:
+      - /var/cache/nginx:size=64m,mode=755
+      - /var/run:size=16m,mode=755
+      - /tmp:size=64m,mode=1777
+    pids_limit: 128
+    mem_limit: 128m
+    cpus: 0.25
     logging: *default-logging
     healthcheck:
-      test: ['CMD-SHELL', 'curl -s -I http://localhost/static/ > /dev/null || exit 1']
+      test: ['CMD-SHELL', 'curl --fail --silent --show-error http://127.0.0.1/healthz > /dev/null']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -62,14 +88,72 @@ services:
     networks:
       - internal
       - caddy
-    entrypoint: ['/app/bin/django-entrypoint.sh']
-    env_file:
-      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.django.prod
+      DEBUG: 'false'
+      DJANGO_VITE_DEV: 'false'
+      DJANGO_ADMIN_PATH: ${DJANGO_ADMIN_PATH:-admin/}
+      WAGTAIL_ADMIN_PATH: ${WAGTAIL_ADMIN_PATH:-cms/}
+      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY is required}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:?ALLOWED_HOSTS is required}
+      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:?CSRF_TRUSTED_ORIGINS is required}
+      SECURE_SSL_REDIRECT: ${SECURE_SSL_REDIRECT:-true}
+      DJANGO_SECURE_CONTENT_TYPE_NOSNIFF: ${DJANGO_SECURE_CONTENT_TYPE_NOSNIFF:-true}
+      SECURE_HSTS_SECONDS: ${SECURE_HSTS_SECONDS:-31536000}
+      DJANGO_LOG_LEVEL: ${DJANGO_LOG_LEVEL:-INFO}
+      DJANGO_LOG_BACKENDS_LEVEL: ${DJANGO_LOG_BACKENDS_LEVEL:-WARNING}
+      DJANGO_ADMINS: ${DJANGO_ADMINS:-}
+      INTERNAL_IPS: ${INTERNAL_IPS:-127.0.0.1,localhost}
+      ACCOUNT_DEFAULT_HTTP_PROTOCOL: ${ACCOUNT_DEFAULT_HTTP_PROTOCOL:-https}
+      DB_NAME: ${DB_NAME:?DB_NAME is required}
+      DB_USER: ${DB_USER:?DB_USER is required}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      CONN_HEALTH_CHECKS: ${CONN_HEALTH_CHECKS:-true}
+      DB_POOL: ${DB_POOL:-true}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
+      REDIS_LOCATION: redis://redis:6379/1
+      REDIS_URL: redis://redis:6379/1
+      AWS_STORAGE_BUCKET_NAME: ${AWS_STORAGE_BUCKET_NAME:?AWS_STORAGE_BUCKET_NAME is required}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:?AWS_ACCESS_KEY_ID is required}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:?AWS_SECRET_ACCESS_KEY is required}
+      AWS_S3_ENDPOINT_URL: ${AWS_S3_ENDPOINT_URL:?AWS_S3_ENDPOINT_URL is required}
+      AWS_S3_CUSTOM_DOMAIN: ${AWS_S3_CUSTOM_DOMAIN:-}
+      CLOUDFLARE_ZONEID: ${CLOUDFLARE_ZONEID:-}
+      CLOUDFLARE_CACHE_TOKEN: ${CLOUDFLARE_CACHE_TOKEN:-}
+      WAGTAILADMIN_BASE_URL: ${WAGTAILADMIN_BASE_URL:-https://mahmoudashraf.dev}
+      RECAPTCHA_PRIVATE_KEY: ${RECAPTCHA_PRIVATE_KEY:-}
+      WEBMENTION_TOKEN: ${WEBMENTION_TOKEN:-}
+      WEBMENTION_DOMAIN: ${WEBMENTION_DOMAIN:-mahmoudashraf.dev}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_SECRET: ${GITHUB_SECRET:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_SECRET: ${GOOGLE_SECRET:-}
+      EMAIL_HOST: ${EMAIL_HOST:-}
+      EMAIL_PORT: ${EMAIL_PORT:-465}
+      EMAIL_USER: ${EMAIL_USER:-}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      TMDB_API_KEY: ${TMDB_API_KEY:-}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-0.05}
+      SENTRY_PROFILES_SAMPLE_RATE: ${SENTRY_PROFILES_SAMPLE_RATE:-0.0}
+      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-3}
     init: true
-    stop_grace_period: 45s
+    stop_grace_period: 90s
     restart: unless-stopped
+    read_only: true
     security_opt:
       - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:size=256m,mode=1777
+      - /home/app:size=64m,uid=1000,gid=1000,mode=755
+    pids_limit: 512
+    mem_limit: 1536m
+    cpus: 2.0
     logging: *default-logging
     labels:
       caddy: mahmoudashraf.dev

@@ -14,7 +14,14 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-COMPOSE_FILE="${COMPOSE_FILE:-${PROJECT_DIR}/compose.yaml}"
+EXPLICIT_COMPOSE_FILE="${COMPOSE_FILE:-}"
+
+set -a
+[[ -f "${PROJECT_DIR}/.env" ]] && source "${PROJECT_DIR}/.env"
+[[ -f "${PROJECT_DIR}/.env.deploy" ]] && source "${PROJECT_DIR}/.env.deploy"
+set +a
+
+COMPOSE_FILE="${EXPLICIT_COMPOSE_FILE:-${PROJECT_DIR}/compose.yaml}"
 
 # ── Helpers ───────────────────────────────────────────────────────
 msg_info() { echo -e "$(date +'%Y-%m-%d %H:%M:%S') \e[1m[INFO]\e[0m $*"; }
@@ -31,7 +38,11 @@ usage() {
 }
 
 docker_compose() {
-  docker compose -f "$COMPOSE_FILE" "$@"
+  local env_args=()
+  [[ -f "${PROJECT_DIR}/.env" ]] && env_args+=(--env-file "${PROJECT_DIR}/.env")
+  [[ -f "${PROJECT_DIR}/.env.deploy" ]] && env_args+=(--env-file "${PROJECT_DIR}/.env.deploy")
+
+  docker compose "${env_args[@]}" -f "$COMPOSE_FILE" "$@"
 }
 
 # ── Parse arguments ──────────────────────────────────────────────
@@ -83,9 +94,8 @@ fi
 # ── Flush Redis ──────────────────────────────────────────────────
 msg_info "Flushing all Redis data..."
 
-# Using sh -c allows the REDIS_PASSWORD environment variable to be evaluated
-# inside the container context where it is defined by the env_file.
-if docker_compose exec -T redis sh -c 'valkey-cli -a "$REDIS_PASSWORD" FLUSHALL' >/dev/null 2>&1; then
+# Using sh -c allows REDIS_PASSWORD to be evaluated inside the container context.
+if docker_compose exec -T redis sh -c 'REDISCLI_AUTH="$REDIS_PASSWORD" valkey-cli FLUSHALL' >/dev/null 2>&1; then
   msg_success "Successfully flushed all Redis data."
 else
   msg_error "Failed to flush Redis data."

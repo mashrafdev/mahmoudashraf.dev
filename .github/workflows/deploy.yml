@@ -18,11 +18,11 @@ jobs:
     runs-on: ubuntu-latest
     concurrency:
       group: production-deploy
-      cancel-in-progress: true
+      cancel-in-progress: false
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
 
@@ -58,12 +58,19 @@ jobs:
             export IMAGE_TAG
 
             docker compose pull
-            docker compose up -d
+            if docker compose ps --status running --format '{{.Service}}' | grep -qx postgres; then
+              ./bin/db-backup
+            fi
+            docker compose up -d --wait --wait-timeout 300 postgres redis
+            docker compose run --rm --no-deps django python manage.py migrate --noinput
+            docker compose up -d --wait --wait-timeout 300
+            docker compose exec -T django python manage.py check --deploy
+            curl --fail --silent --show-error --location --max-time 20 https://mahmoudashraf.dev/ >/dev/null
             docker compose ps
 
       - name: Notify Telegram
         if: always()
-        uses: appleboy/telegram-action@master
+        uses: appleboy/telegram-action@221e6b684967abe813051ee4a37dd61770a83ad3
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}

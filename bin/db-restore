@@ -19,10 +19,17 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+EXPLICIT_COMPOSE_FILE="${COMPOSE_FILE:-}"
+
+set -a
+[[ -f "${PROJECT_DIR}/.env" ]] && source "${PROJECT_DIR}/.env"
+[[ -f "${PROJECT_DIR}/.env.deploy" ]] && source "${PROJECT_DIR}/.env.deploy"
+set +a
 
 BACKUP_DIR="${BACKUP_DIR:-${PROJECT_DIR}/backups}"
-COMPOSE_FILE="${COMPOSE_FILE:-${PROJECT_DIR}/compose.yaml}"
+COMPOSE_FILE="${EXPLICIT_COMPOSE_FILE:-${PROJECT_DIR}/compose.yaml}"
 BACKUP_PREFIX="backup"
+STOPPED_SERVICES=()
 
 # ── Helpers ───────────────────────────────────────────────────────
 msg_info() { echo -e "$(date +'%Y-%m-%d %H:%M:%S') \e[1m[INFO]\e[0m $*"; }
@@ -47,7 +54,7 @@ list_backups() {
   local backups
   backups=$(find "$BACKUP_DIR" -maxdepth 1 \
     -name "${BACKUP_PREFIX}_*.sql.gz" 2>/dev/null |
-    sort -rn)
+    sort -r)
 
   if [[ -z "$backups" ]]; then
     msg_error "No backups found in ${BACKUP_DIR}"
@@ -64,12 +71,29 @@ list_backups() {
 }
 
 find_latest() {
-  find "$BACKUP_DIR" -maxdepth 1 -name "${BACKUP_PREFIX}_*.sql.gz" 2>/dev/null | sort -rn | head -1
+  find "$BACKUP_DIR" -maxdepth 1 -name "${BACKUP_PREFIX}_*.sql.gz" 2>/dev/null | sort -r | head -1
 }
 
 docker_compose() {
-  docker compose -f "$COMPOSE_FILE" "$@"
+  local env_args=()
+  [[ -f "${PROJECT_DIR}/.env" ]] && env_args+=(--env-file "${PROJECT_DIR}/.env")
+  [[ -f "${PROJECT_DIR}/.env.deploy" ]] && env_args+=(--env-file "${PROJECT_DIR}/.env.deploy")
+
+  docker compose "${env_args[@]}" -f "$COMPOSE_FILE" "$@"
 }
+
+cleanup() {
+  local status=$?
+
+  if [[ $status -ne 0 && ${#STOPPED_SERVICES[@]} -gt 0 ]]; then
+    msg_warn "Restore failed; restarting stopped services: ${STOPPED_SERVICES[*]}"
+    docker_compose start "${STOPPED_SERVICES[@]}" || true
+  fi
+
+  exit "$status"
+}
+
+trap cleanup EXIT
 
 # ── Parse arguments ──────────────────────────────────────────────
 BACKUP_FILE=""
@@ -129,6 +153,8 @@ if [[ ! -s "$BACKUP_FILE" ]]; then
   exit 1
 fi
 
+gzip -t "$BACKUP_FILE"
+
 backup_size=$(du -h "$BACKUP_FILE" | cut -f1)
 msg_info "Backup file: $(basename "$BACKUP_FILE") (${backup_size})"
 
@@ -153,7 +179,6 @@ if [[ "$NO_CONFIRM" != true ]]; then
 fi
 
 # ── Stop app services to drop active connections ─────────────────
-STOPPED_SERVICES=()
 for svc in django celery celerybeat; do
   if docker_compose ps --status running --format '{{.Name}}' 2>/dev/null |
     grep -q "$svc"; then

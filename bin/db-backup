@@ -18,29 +18,84 @@
 ###     R2_REMOTE       rclone remote name (default: r2-mahmoudashraf-dev)
 ###     R2_BUCKET       R2 bucket name     (default: mahmoudashraf-dev)
 ###     R2_PATH         Path inside bucket (default: backups)
+###     R2_ACCOUNT_ID   Cloudflare account ID for env-configured R2 remote
+###     R2_ENDPOINT     Cloudflare R2 endpoint; derived from R2_ACCOUNT_ID if unset
+###     R2_ACCESS_KEY_ID      R2 backup access key ID
+###     R2_SECRET_ACCESS_KEY  R2 backup secret access key
+###     REQUIRE_R2_UPLOAD  Fail if R2 upload is unavailable/failed (default: true)
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+EXPLICIT_COMPOSE_FILE="${COMPOSE_FILE:-}"
+
+set -a
+[[ -f "${PROJECT_DIR}/.env" ]] && source "${PROJECT_DIR}/.env"
+[[ -f "${PROJECT_DIR}/.env.deploy" ]] && source "${PROJECT_DIR}/.env.deploy"
+set +a
 
 BACKUP_DIR="${BACKUP_DIR:-${PROJECT_DIR}/backups}"
 RETENTION_DAYS="${RETENTION_DAYS:-7}"
-COMPOSE_FILE="${COMPOSE_FILE:-${PROJECT_DIR}/compose.yaml}"
+COMPOSE_FILE="${EXPLICIT_COMPOSE_FILE:-${PROJECT_DIR}/compose.yaml}"
 BACKUP_PREFIX="backup"
 R2_REMOTE="${R2_REMOTE:-r2-mahmoudashraf-dev}"
 R2_BUCKET="${R2_BUCKET:-mahmoudashraf-dev}"
 R2_PATH="${R2_PATH:-backups}"
+R2_ACCOUNT_ID="${R2_ACCOUNT_ID:-}"
+R2_ENDPOINT="${R2_ENDPOINT:-}"
+R2_ACCESS_KEY_ID="${R2_ACCESS_KEY_ID:-}"
+R2_SECRET_ACCESS_KEY="${R2_SECRET_ACCESS_KEY:-}"
+REQUIRE_R2_UPLOAD="${REQUIRE_R2_UPLOAD:-true}"
+RCLONE_TEMP_CONFIG=""
 
 # ── Helpers ───────────────────────────────────────────────────────
 msg_info() { echo -e "$(date +'%Y-%m-%d %H:%M:%S') \e[1m[INFO]\e[0m $*"; }
 msg_success() { echo -e "$(date +'%Y-%m-%d %H:%M:%S') \e[32m[OK]\e[0m $*"; }
 msg_error() { echo -e "$(date +'%Y-%m-%d %H:%M:%S') \e[31m[ERROR]\e[0m $*" >&2; }
 
+cleanup() {
+  [[ -n "$RCLONE_TEMP_CONFIG" ]] && rm -f "$RCLONE_TEMP_CONFIG"
+}
+
+trap cleanup EXIT
+
+docker_compose() {
+  local env_args=()
+  [[ -f "${PROJECT_DIR}/.env" ]] && env_args+=(--env-file "${PROJECT_DIR}/.env")
+  [[ -f "${PROJECT_DIR}/.env.deploy" ]] && env_args+=(--env-file "${PROJECT_DIR}/.env.deploy")
+
+  docker compose "${env_args[@]}" -f "$COMPOSE_FILE" "$@"
+}
+
+configure_rclone_r2_remote() {
+  if [[ -z "$R2_ENDPOINT" && -n "$R2_ACCOUNT_ID" ]]; then
+    R2_ENDPOINT="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+  fi
+
+  if [[ -z "$R2_ENDPOINT" || -z "$R2_ACCESS_KEY_ID" || -z "$R2_SECRET_ACCESS_KEY" ]]; then
+    return 1
+  fi
+
+  RCLONE_TEMP_CONFIG="$(mktemp)"
+  chmod 600 "$RCLONE_TEMP_CONFIG"
+  cat >"$RCLONE_TEMP_CONFIG" <<EOF
+[$R2_REMOTE]
+type = s3
+provider = Cloudflare
+access_key_id = $R2_ACCESS_KEY_ID
+secret_access_key = $R2_SECRET_ACCESS_KEY
+endpoint = $R2_ENDPOINT
+acl = private
+EOF
+  export RCLONE_CONFIG="$RCLONE_TEMP_CONFIG"
+  return 0
+}
+
 # ── Pre-flight checks ────────────────────────────────────────────
 mkdir -p "$BACKUP_DIR"
 
-if ! docker compose -f "$COMPOSE_FILE" ps --status running --format '{{.Name}}' 2>/dev/null |
+if ! docker_compose ps --status running --format '{{.Name}}' 2>/dev/null |
   grep -q 'postgres'; then
   msg_error "PostgreSQL container is not running."
   msg_error "Start it with: docker compose -f ${COMPOSE_FILE} up -d postgres"
@@ -56,7 +111,7 @@ msg_info "Starting database backup..."
 # -T disables pseudo-TTY so piping works correctly.
 # Env vars POSTGRES_USER / POSTGRES_DB are set inside the container
 # by the compose environment block.
-if docker compose -f "$COMPOSE_FILE" exec -T postgres \
+if docker_compose exec -T postgres \
   bash -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB"' |
   gzip >"$backup_path"; then
 
@@ -66,6 +121,8 @@ if docker compose -f "$COMPOSE_FILE" exec -T postgres \
     rm -f "$backup_path"
     exit 1
   fi
+
+  gzip -t "$backup_path"
 
   backup_size=$(du -h "$backup_path" | cut -f1)
   msg_success "Created ${backup_filename} (${backup_size})"
@@ -85,15 +142,24 @@ fi
 
 # ── Upload to R2 ─────────────────────────────────────────────────
 if command -v rclone &>/dev/null; then
+  configure_rclone_r2_remote || true
+
   r2_dest="${R2_REMOTE}:${R2_BUCKET}/${R2_PATH}"
   msg_info "Uploading ${backup_filename} to ${r2_dest}..."
   if rclone copy "$backup_path" "$r2_dest" --s3-no-check-bucket; then
     msg_success "Uploaded ${backup_filename} to R2"
   else
     msg_error "R2 upload failed (backup is still saved locally)"
+    msg_error "Configure either rclone remote '${R2_REMOTE}' or set R2_ACCOUNT_ID/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY."
+    [[ "$REQUIRE_R2_UPLOAD" == "true" ]] && exit 1
   fi
 else
-  msg_info "rclone not installed — skipping R2 upload"
+  if [[ "$REQUIRE_R2_UPLOAD" == "true" ]]; then
+    msg_error "rclone not installed; cannot upload required off-site backup"
+    exit 1
+  fi
+
+  msg_info "rclone not installed; skipping R2 upload because REQUIRE_R2_UPLOAD=false"
 fi
 
 remaining=$(find "$BACKUP_DIR" -maxdepth 1 -name "${BACKUP_PREFIX}_*.sql.gz" | wc -l)
