@@ -1,5 +1,6 @@
 import random
 import subprocess
+from pathlib import Path
 
 from django import forms
 from django.core.exceptions import ValidationError
@@ -304,6 +305,7 @@ THEME_CHOICES = [
 ]
 
 THEME_KEYS = [key for key, _ in THEME_CHOICES]
+SHIKI_SCRIPT = Path(__file__).with_name("shiki.mjs")
 
 
 def highlight_code_with_shiki(
@@ -318,7 +320,7 @@ def highlight_code_with_shiki(
 
     try:
         result = subprocess.run(
-            ["node", "bin/shiki.mjs", code, language, theme],
+            ["node", str(SHIKI_SCRIPT), code, language, theme],
             capture_output=True,
             text=True,
             timeout=30,

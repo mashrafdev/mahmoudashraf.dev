@@ -115,7 +115,7 @@ ENV PATH="/app/.venv/bin:$PATH" \
 RUN chmod +x /app/bin/django-entrypoint.sh \
     && node --version \
     && python --version \
-    && node bin/shiki.mjs 'print("ok")' python github-dark >/dev/null
+    && node src/base/blocks/shiki.mjs 'print("ok")' python github-dark >/dev/null
 
 USER app
 
