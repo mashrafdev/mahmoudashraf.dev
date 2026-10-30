@@ -1,7 +1,0 @@
-{% load wagtailcore_tags %}
-
-<{{ self.list_type }}>
-{% for item in self.items %}
-  {% include_block item %}
-{% endfor %}
-</{{ self.list_type }}>

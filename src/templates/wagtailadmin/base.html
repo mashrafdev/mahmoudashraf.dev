@@ -1,8 +1,0 @@
-{% extends "wagtailadmin/base.html" %}
-{% load django_vite %}
-
-{% block extra_js %}
-  {{ block.super }}
-  {% vite_hmr_client %}
-  {% vite_asset "src/resources/js/admin.ts" %}
-{% endblock extra_js %}

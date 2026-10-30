@@ -1,9 +1,0 @@
-{% load wagtailimages_tags %}
-
-<div class="w-40 ht-40 xs:w-48 xs:ht-48 sm:w-64 sm:ht-64 lg:w-72 lg:ht-72 bg-gradient-to-b from-gradient-1 to-gradient-2 pr-2 rounded-full">
-  {% picture self.image format-{avif,webp,jpeg} width-{160,192,256,288,576}
-  sizes="(min-width: 1024px) 288px, (min-width: 640px) 256px, (min-width: 475px) 192px, 160px"
-  class="w-full ht-full object-cover rounded-full"
-  loading="eager"
-  decoding="sync" %}
-</div>

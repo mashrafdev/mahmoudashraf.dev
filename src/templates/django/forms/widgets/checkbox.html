@@ -1,7 +1,0 @@
-<input type="{{ widget.type }}"
-       name="{{ widget.name }}"
-       {% if widget.value != None %}
-         value="{{ widget.value|stringformat:'s' }}"
-       {% endif %}
-       class="w-5 ht-5 accent-accent bg-neutral-800 text-primary border-neutral-700 rounded focus:ring-accent/50 transition {{ widget.attrs.class }}"
-       {% include "django/forms/widgets/attrs.html" %}>
