@@ -19,14 +19,14 @@
                      flex items-center gap-x-3
                    {% endif %}">
           {% if menu_items|length > 5 %}
-            {% link href=item.href class="text-stuble hover:text-accent focus:text-accent transition-colors duration-200 inline-block" %}
+            {% link href=item.href class="text-stuble hover:text-accent focus-visible:text-accent transition-colors duration-200 inline-block" %}
               {{ item.text }}
             {% endlink %}
             {% if not forloop.last %}
               <span class="text-neutral-600" aria-hidden="true">•</span>
             {% endif %}
           {% else %}
-            {% link href=item.href class="text-stuble hover:text-accent focus:text-accent hover:translate-x-1 focus:translate-x-1 transition-all duration-200 inline-block" %}
+            {% link href=item.href class="text-stuble hover:text-accent focus-visible:text-accent hover:translate-x-1 focus-visible:translate-x-1 transition-all duration-200 inline-block" %}
               {{ item.text }}
             {% endlink %}
           {% endif %}

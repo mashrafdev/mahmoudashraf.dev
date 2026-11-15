@@ -157,7 +157,7 @@
     transition: color 0.2s ease;
   }
   a:hover,
-  a:focus {
+  a:focus-visible {
     color: var(--prose-links);
   }
 

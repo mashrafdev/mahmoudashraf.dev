@@ -22,11 +22,11 @@
 
       <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
         <a href="{% slugurl "home" %}"
-           class="inline-block px-6 py-3 bg-accent text-dark font-semibold transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+           class="inline-block px-6 py-3 bg-accent text-dark font-semibold transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-accent-bright focus-visible:outline-offset-2">
           {% trans "Go back home" %}
         </a>
         <a href="{% url 'search' %}"
-           class="inline-block px-6 py-3 border border-dark text-primary font-medium transition hover:bg-neutral-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+           class="inline-block px-6 py-3 border border-dark text-primary font-medium transition hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-accent-bright focus-visible:outline-offset-2">
           {% trans "Search the site" %}
         </a>
       </div>

@@ -11,6 +11,14 @@ body {
   line-height: 1.5;
 }
 
+/* Every link keeps a visible keyboard focus outline. This rule stays unlayered so
+   utilities such as `focus:outline-none` cannot remove it. accent-bright exceeds
+   the 3:1 non-text contrast requirement against the site's dark surfaces. */
+:where(a:any-link):focus-visible {
+  outline: 2px solid var(--color-accent-bright);
+  outline-offset: 2px;
+}
+
 /* Keep fragment targets and focused elements clear of the sticky header. */
 html {
   scroll-padding-block-start: 6.5rem;

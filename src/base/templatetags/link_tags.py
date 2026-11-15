@@ -7,8 +7,9 @@ from src.utils.cva import cva
 
 LINK_CVA = cva(
     base=(
-        "inline-flex items-center gap-3 group focus-visible:outline-none focus-visible:ring "
-        "focus-visible:ring-primary underline-offset-4 hover:underline"
+        "inline-flex items-center gap-3 group underline-offset-4 hover:underline "
+        "focus-visible:outline-2 focus-visible:outline-accent-bright "
+        "focus-visible:outline-offset-2"
     ),
     variants={
         "variant": {
@@ -26,9 +27,7 @@ LINK_CVA = cva(
                 "inline-flex items-center justify-center gap-2 rounded-full "
                 "border border-primary/20 "
                 "bg-transparent px-4 py-1.5 text-sm font-medium text-primary "
-                "hover:bg-accent hover:text-black transition-colors duration-200 "
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent "
-                "focus-visible:ring-offset-2 focus-visible:ring-offset-darker"
+                "hover:bg-accent hover:text-black transition-colors duration-200"
             ),
         },
         "size": {
@@ -80,9 +79,9 @@ class LinkNode(template.Node):
         prefix_icon = resolved.get("prefix_icon")
         suffix_icon = resolved.get("suffix_icon")
         href = resolved.get("href", "#")
-        variant = resolved.get("variant", "default")
-        size = resolved.get("size", "md")
-        user_classes = resolved.get("class", "")
+        variant = resolved.get("variant") or "default"
+        size = resolved.get("size") or "md"
+        user_classes = resolved.get("class") or ""
         user_icon_class = resolved.pop("icon_class", "")
 
         is_icon_only = icon and not content and not prefix_icon and not suffix_icon

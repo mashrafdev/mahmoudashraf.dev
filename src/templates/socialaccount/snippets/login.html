@@ -17,7 +17,7 @@
   <div class="flex flex-col gap-3 mt-6">
     {% for provider in socialaccount_providers %}
       <a href="{% provider_login_url provider.id %}"
-         class="w-full inline-flex items-center justify-center gap-2 bg-primary text-black px-5 py-2.5 rounded-md font-medium hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-accent transition-colors">
+         class="w-full inline-flex items-center justify-center gap-2 bg-primary text-black px-5 py-2.5 rounded-md font-medium hover:bg-neutral-100 transition-colors focus-visible:outline-2 focus-visible:outline-accent-bright focus-visible:outline-offset-2">
         {% icon provider.id class="w-5 ht-5" fallback=provider.name %}
         Sign in with {{ provider.name }}
       </a>
