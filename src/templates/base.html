@@ -9,6 +9,9 @@
       {# Basic meta #}
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
+      {# Keep native controls and browser chrome aligned with the dark theme. #}
+      <meta name="color-scheme" content="dark">
+      <meta name="theme-color" content="#1a1a1a">
 
       {# HTMX config #}
       <meta name="htmx-config"
@@ -126,23 +129,30 @@
     </head>
   {% endif %}
 
-  <body hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'
+  {# #top is the footer's "back to top" target. #}
+  <body id="top"
+        hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'
         class="ht-full relative bg-darker text-primary">
 
-    <aside class="fixed left-4 bottom-4 max-w-xs z-10 bg-darker">
-      {% block aside %}
-      {% endblock aside %}
-    </aside>
+    {# First tab stop: lets keyboard users bypass the repeated header and navigation. #}
+    {% if not request.htmx %}
+      <a href="#main-content" class="skip-link">Skip to main content</a>
+    {% endif %}
+
+    {# Avoid exposing an empty complementary landmark when no template fills the block. #}
+    <aside class="fixed left-4 bottom-4 max-w-xs z-10 bg-darker empty:hidden">{% block aside %}{% endblock aside %}</aside>
 
     <div class="min-h-full flex flex-col max-w-6xl mx-auto">
       {% if not request.htmx %}
         {% wagtailuserbar %}
-        <a id="top"></a>
         {% include "includes/messages.html" %}
         {% include "includes/header.html" %}
       {% endif %}
 
-      <main class="bg-darker flex-1 flex flex-col relative z-1">
+      {# tabindex="-1" lets the skip link move focus here without adding main to the tab order. #}
+      <main id="main-content"
+            tabindex="-1"
+            class="bg-darker flex-1 flex flex-col relative z-1 focus:outline-none">
         {% block content %}
         {% endblock content %}
       </main>

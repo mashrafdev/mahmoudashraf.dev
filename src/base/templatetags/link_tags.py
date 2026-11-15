@@ -105,7 +105,11 @@ class LinkNode(template.Node):
         if is_icon_only and icon:
             attrs["aria-label"] = icon.replace("-", " ").title()
 
+        # These keys configure the template tag; they are not valid anchor attributes.
         for key, val in resolved.items():
+            if key in {"icon", "prefix_icon", "suffix_icon", "variant", "size", "class"}:
+                continue
+
             attrs[key.replace("_", "-")] = val
 
         return render_to_string(

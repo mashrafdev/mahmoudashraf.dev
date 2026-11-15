@@ -50,6 +50,12 @@ def icon(name: str, **kwargs):
 
 
 @register.filter
+def widget_with_id(field, widget_id):
+    """Render a bound field with a caller-supplied unique id."""
+    return field.as_widget(attrs={"id": widget_id})
+
+
+@register.filter
 def get_item(dictionary, key):
     return dictionary.get(key)
 
